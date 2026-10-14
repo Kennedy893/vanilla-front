@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
     const { handleLogin, loading, error } = useLogin();
+    const navigate = useNavigate();
 
     async function handleSubmit(
         event: React.FormEvent<HTMLFormElement>
@@ -15,7 +17,8 @@ export default function Login() {
         try {
         await handleLogin({ username, password });
 
-        // Redirection vers le tableau de bord à ajouter ici.
+        // Connexion réussie : aller au tableau de bord
+        navigate("/dashboard", { replace: true });
         } catch {
         // L'erreur est déjà stockée dans le hook.
         }
@@ -58,7 +61,7 @@ export default function Login() {
             <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-8 shadow-sm sm:p-10">
             <h1 className="text-2xl font-bold text-stone-900">Connexion</h1>
             <p className="mt-1 text-sm text-stone-500">
-                Accédez à votre espace de traçabilité.
+                Connectez-vous à votre espace de traçabilité.
             </p>
 
             {/* Bloc d'erreur */}

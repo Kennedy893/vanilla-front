@@ -26,3 +26,19 @@ export async function login(
 
   return response.json() as Promise<LoginResponse>;
 }
+
+export function logout(): void {
+  sessionStorage.removeItem("access_token");
+  // Si vous stockez d'autres infos (user, rôle...), nettoyez-les aussi :
+  // sessionStorage.removeItem("user");
+}
+
+// helper pour récupérer le token
+export function getAccessToken(): string | null {
+  return sessionStorage.getItem("access_token");
+}
+
+// helper pour savoir si connecté
+export function isAuthenticated(): boolean {
+  return Boolean(sessionStorage.getItem("access_token"));
+}
