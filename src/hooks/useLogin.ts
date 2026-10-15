@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from "react";
-import { login } from "../services/authService";
+import { login, setActiveOrganizationId } from "../services/authService";
 import type { LoginRequest } from "../types/auth";
 
 export function useLogin() {
@@ -19,6 +19,9 @@ export function useLogin() {
           "access_token",
           result.access_token
         );
+        if (result.organization_id !== null) {
+          setActiveOrganizationId(result.organization_id);
+        }
 
         return result;
       } catch (err) {

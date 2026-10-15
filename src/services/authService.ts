@@ -1,5 +1,7 @@
 import type { LoginRequest, LoginResponse } from "../types/auth";
 
+const ACTIVE_ORGANIZATION_KEY = "active_organization_id";
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 export async function login(
@@ -29,13 +31,26 @@ export async function login(
 
 export function logout(): void {
   sessionStorage.removeItem("access_token");
-  // Si vous stockez d'autres infos (user, rôle...), nettoyez-les aussi :
-  // sessionStorage.removeItem("user");
+  sessionStorage.removeItem(ACTIVE_ORGANIZATION_KEY);
 }
 
 // helper pour récupérer le token
 export function getAccessToken(): string | null {
   return sessionStorage.getItem("access_token");
+}
+
+export function getActiveOrganizationId(): number | null {
+  const value = sessionStorage.getItem(ACTIVE_ORGANIZATION_KEY);
+  if (!value) return null;
+
+  const organizationId = Number(value);
+  return Number.isInteger(organizationId) && organizationId > 0
+    ? organizationId
+    : null;
+}
+
+export function setActiveOrganizationId(organizationId: number): void {
+  sessionStorage.setItem(ACTIVE_ORGANIZATION_KEY, String(organizationId));
 }
 
 // helper pour savoir si connecté
