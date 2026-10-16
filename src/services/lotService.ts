@@ -1,5 +1,5 @@
 import { getAccessToken, getActiveOrganizationId } from "./authService";
-import type { CreateLotRequest, Exploitation, Lot, LotsList, LotStatus } from "../types/types";
+import type { CreateLotRequest, Exploitation, Lot, LotHistoryEvent, LotsList, LotStatus } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -54,12 +54,6 @@ export function createLot(payload: CreateLotRequest): Promise<Lot> {
   });
 }
 
-// export function getLots(): Promise<LotsList> {
-//   return request<LotsList>("/api/lots", {
-//     method: "GET",
-//   });
-// }
-
 export function getLots(
   filters: { status?: LotStatus; limit?: number; offset?: number } = {}
 ): Promise<LotsList> {
@@ -69,4 +63,8 @@ export function getLots(
   if (filters.offset) params.set("offset", String(filters.offset));
   const query = params.toString();
   return request<LotsList>(`/api/lots${query ? `?${query}` : ""}`);
+}
+
+export function getLotDetail(lotId: number): Promise<LotHistoryEvent[]> {
+  return request<LotHistoryEvent[]>(`/api/lots/${lotId}/history`);
 }

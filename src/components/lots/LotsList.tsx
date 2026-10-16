@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PAGE_SIZE, useLots } from "../../hooks/useLots";
 import type { LotStatus } from "../../types/types";
+import { Archive, ArrowRightLeft, CircleCheck, Eye, QrCode } from "lucide-react";
 
 // Onglets de filtre : value = statut envoyé au backend (undefined = tous les lots)
 const STATUS_TABS: { value: LotStatus | undefined; label: string }[] = [
@@ -17,6 +19,7 @@ const STATUS_TABS: { value: LotStatus | undefined; label: string }[] = [
 ];
 
 export default function LotsList() {
+    const navigate = useNavigate();
   const [status, setStatus] = useState<LotStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
   const { lots, total, statusCounts, loading, error } = useLots(status, page);
@@ -75,74 +78,120 @@ export default function LotsList() {
 
         {!loading && !error && lots.length > 0 && (
         <>
-            <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-stone-200 text-sm">
+            <table className="min-w-full divide-y divide-stone-200 text-sm">
                 <thead className="bg-stone-50">
-                    <tr>
+                <tr>
                     {[
-                        "Code du lot",
-                        "Exploitation",
-                        "État du produit",
-                        "Quantité (kg)",
-                        "Statut",
-                        "Date de récolte",
+                    "Code du lot",
+                    "Exploitation",
+                    "État du produit",
+                    "Quantité (kg)",
+                    "Statut",
+                    "Date de récolte",
+                    "Actions",
                     ].map((title) => (
-                        <th
+                    <th
                         key={title}
                         className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-stone-500"
-                        >
+                    >
                         {title}
-                        </th>
+                    </th>
                     ))}
-                    </tr>
+                </tr>
                 </thead>
 
                 <tbody className="divide-y divide-stone-100">
-                    {lots.map((lot) => (
+                {lots.map((lot) => (
                     <tr key={lot.id} className="transition hover:bg-stone-50">
-                        <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-900">{lot.lot_code}</td>
-                        <td className="px-4 py-3 text-stone-700">{lot.farm.name ?? lot.farm.farm_code}</td>
-                        <td className="px-4 py-3 text-stone-700">{lot.product_state ?? "-"}</td>
-                        <td className="px-4 py-3 tabular-nums text-stone-700">{lot.quantity_kg}</td>
-                        <td className="px-4 py-3">
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-900">{lot.lot_code}</td>
+                    <td className="px-4 py-3 text-stone-700">{lot.farm.name ?? lot.farm.farm_code}</td>
+                    <td className="px-4 py-3 text-stone-700">{lot.product_state ?? "-"}</td>
+                    <td className="px-4 py-3 tabular-nums text-stone-700">{lot.quantity_kg}</td>
+                    <td className="px-4 py-3">
                         <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
-                            {lot.status ?? "-"}
+                        {lot.status ?? "-"}
                         </span>
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-stone-700">
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-stone-700">
                         {lot.harvest_date
-                            ? new Date(lot.harvest_date).toLocaleDateString("fr-FR")
-                            : "-"}
+                        ? new Date(lot.harvest_date).toLocaleDateString("fr-FR")
+                        : "-"}
+                    </td>
+                    <td className="px-4 py-3">
+                        <div className="flex gap-1.5">
+                            <button
+                                type="button"
+                                onClick={() => navigate(`/lots/${lot.id}`, { state: { lot } })}
+                                title="Voir le détail"
+                                aria-label="Voir le détail"
+                                className="rounded-lg border border-stone-300 bg-white p-2 text-stone-600 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
+                            >
+                            <Eye className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                title="Valider la récolte"
+                                aria-label="Valider la récolte"
+                                className="rounded-lg bg-emerald-800 p-2 text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
+                            >
+                            <CircleCheck className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                title="Transférer"
+                                aria-label="Transférer"
+                                className="rounded-lg border border-stone-300 bg-white p-2 text-stone-600 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
+                            >
+                            <ArrowRightLeft className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                title="Voir / imprimer le QR code"
+                                aria-label="Voir / imprimer le QR code"
+                                className="rounded-lg border border-stone-300 bg-white p-2 text-stone-600 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
+                            >
+                            <QrCode className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                title="Archiver"
+                                aria-label="Archiver"
+                                className="rounded-lg border border-red-200 bg-white p-2 text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+                            >
+                            <Archive className="h-4 w-4" />
+                            </button>
+                        </div>
                         </td>
                     </tr>
-                    ))}
+                ))}
                 </tbody>
-                </table>
+            </table>
             </div>
-            </div>
+        </div>
 
-            <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
             <button
-                type="button"
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-                className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            disabled={page <= 1}
+            onClick={() => setPage(page - 1)}
+            className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-50"
             >
-                Précédent
+            Précédent
             </button>
             <span className="text-sm text-stone-600">
-                Page {page} / {pageCount}
+            Page {page} / {pageCount}
             </span>
             <button
-                type="button"
-                disabled={page >= pageCount}
-                onClick={() => setPage(page + 1)}
-                className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            disabled={page >= pageCount}
+            onClick={() => setPage(page + 1)}
+            className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-50"
             >
-                Suivant
+            Suivant
             </button>
-            </div>
+        </div>
         </>
         )}
     </div>

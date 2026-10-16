@@ -4,6 +4,7 @@ import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import Layout from "../components/Layout";
 import Lots from "../pages/Lots";
+import LotDetail from "../components/lots/LotDetail";
 
 export default function AppRouter() {
   return (
@@ -15,6 +16,7 @@ export default function AppRouter() {
       <Route element={<Layout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/lots" element={<Lots />} />
+        <Route path="/lots/:lotId" element={<LotDetail />} />
       </Route>
 
       {/* Redirections */}

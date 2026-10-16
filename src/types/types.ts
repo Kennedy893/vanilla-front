@@ -71,3 +71,70 @@ export interface LotsList {
   offset: number;
   status_counts: LotStatusCounts;
 }
+
+
+// ---------------------------------------------------------------------------
+// Détail d'un lot : GET /lots/{id}  (en-tête du lot + chronologie)
+// ---------------------------------------------------------------------------
+ 
+export type EventType =
+  | "harvest"
+  | "collection"
+  | "transfer"
+  | "processing"
+  | "quality_check"
+  | "storage"
+  | "shipment"
+  | "export";
+ 
+export type EventStatus = "pending" | "validated" | "rejected" | "cancelled";
+ 
+export type EventLotRole = "input" | "output" | "transferred";
+ 
+export type QualityResult = "passed" | "failed" | "conditional";
+ 
+// Rempli uniquement pour les événements de type "quality_check"
+export interface QualityCheckSummary {
+  result: QualityResult;
+  grade: string | null;
+  moisture_percentage: string | null; // Decimal côté Python => string en JSON
+  comments: string | null;
+  checked_by: string; // nom d'utilisateur du contrôleur
+}
+ 
+// Une entrée de la chronologie (schéma LotHistoryEvent)
+export interface LotHistoryEvent {
+  event_id: number;
+  event_code: string;
+  event_type: EventType | null;
+  event_date: string | null; // ISO 8601, sans fuseau
+  status: EventStatus;
+  description: string | null;
+  location_name: string;
+  organization_name: string | null;
+  recorded_by: string;
+  validated_by: string | null;
+  validated_at: string | null;
+  role: EventLotRole | null;
+  quantity_kg: string | null;
+  quality_check: QualityCheckSummary | null;
+}
+ 
+export interface LotHolder {
+  id: number;
+  name: string | null;
+}
+ 
+export interface LotDetail {
+  id: number;
+  lot_code: string;
+  lot_type: "harvest" | "raw" | "intermediate" | "finished";
+  product_state: string | null;
+  quantity_kg: string;
+  status: LotStatus | null;
+  created_at: string | null;
+  updated_at: string | null;
+  farm: LotFarm;
+  holder: LotHolder;
+  events: LotHistoryEvent[]; // du plus ancien au plus récent
+}
