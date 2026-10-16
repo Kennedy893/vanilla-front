@@ -138,3 +138,20 @@ export interface LotDetail {
   holder: LotHolder;
   events: LotHistoryEvent[]; // du plus ancien au plus récent
 }
+
+export interface TransferOrganization {
+  id: number;
+  name: string;
+}
+
+export interface TransferLocation {
+  id: number;
+  name: string;
+}
+
+export interface CreateTransferRequest {
+  to_organization_id: number;
+  destination_location_id: number;
+  dispatch_date: string;
+  notes?: string;
+}

@@ -6,6 +6,8 @@ import { PAGE_SIZE, useLots } from "../../hooks/useLots";
 import type { LotStatus } from "../../types/types";
 import { Archive, ArrowRightLeft, CircleCheck, Eye, QrCode } from "lucide-react";
 import { validateLot } from "../../services/lotService";
+import LotTransfertModal from "./LotTransfertModal";
+import type { LotListItem, TransferLocation, TransferOrganization } from "../../types/types";
 
 // Onglets de filtre : value = statut envoyé au backend (undefined = tous les lots)
 const STATUS_TABS: { value: LotStatus | undefined; label: string }[] = [
@@ -19,13 +21,22 @@ const STATUS_TABS: { value: LotStatus | undefined; label: string }[] = [
   { value: "archived", label: "Archivés" },
 ];
 
-export default function LotsList() {
+interface LotsListProps {
+    transferOrganizations?: TransferOrganization[];
+    transferLocations?: TransferLocation[];
+}
+
+export default function LotsList({
+    transferOrganizations = [],
+    transferLocations = [],
+}: LotsListProps) {
   const navigate = useNavigate();
   const [status, setStatus] = useState<LotStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
   const { lots, total, statusCounts, loading, error } = useLots(status, page);
 
   const [validationError, setValidationError] = useState<string | null>(null);
+    const [transferLot, setTransferLot] = useState<LotListItem | null>(null);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -179,6 +190,7 @@ export default function LotsList() {
                             </button>
                             <button
                                 type="button"
+                                onClick={() => setTransferLot(lot)}
                                 title="Transférer"
                                 aria-label="Transférer"
                                 className="rounded-lg border border-stone-300 bg-white p-2 text-stone-600 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
@@ -232,6 +244,17 @@ export default function LotsList() {
             </button>
         </div>
         </>
+        )}
+
+        {transferLot && (
+            <LotTransfertModal
+                lotId={transferLot.id}
+                lotCode={transferLot.lot_code}
+                organizations={transferOrganizations}
+                locations={transferLocations}
+                onClose={() => setTransferLot(null)}
+                onTransferred={() => window.location.reload()}
+            />
         )}
     </div>
     );

@@ -1,5 +1,5 @@
 import { getAccessToken, getActiveOrganizationId } from "./authService";
-import type { CreateLotRequest, Exploitation, Lot, LotHistoryEvent, LotsList, LotStatus } from "../types/types";
+import type { CreateLotRequest, CreateTransferRequest, Exploitation, Lot, LotHistoryEvent, LotsList, LotStatus } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -72,5 +72,12 @@ export function getLotDetail(lotId: number): Promise<LotHistoryEvent[]> {
 export function validateLot(lotId: number): Promise<void> {
   return request<void>(`/api/lots/${lotId}/validate`, {
     method: "POST",
+  });
+}
+
+export function createTransfer(lotId: number, payload: CreateTransferRequest): Promise<void> {
+  return request<void>(`/api/lots/${lotId}/transfer`, {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
