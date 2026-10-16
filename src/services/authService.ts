@@ -39,6 +39,14 @@ export function getAccessToken(): string | null {
   return sessionStorage.getItem("access_token");
 }
 
+export function setUserName(username: string): void {
+  sessionStorage.setItem("username", username);
+}
+
+export function getUserName(): string | null {
+  return sessionStorage.getItem("username");
+}
+
 export function getActiveOrganizationId(): number | null {
   const value = sessionStorage.getItem(ACTIVE_ORGANIZATION_KEY);
   if (!value) return null;
@@ -51,6 +59,14 @@ export function getActiveOrganizationId(): number | null {
 
 export function setActiveOrganizationId(organizationId: number): void {
   sessionStorage.setItem(ACTIVE_ORGANIZATION_KEY, String(organizationId));
+}
+
+export function setActiveOrganizationRole(role: string): void {
+  sessionStorage.setItem("active_organization_role", role);
+}
+
+export function getActiveOrganizationRole(): string | null {
+  return sessionStorage.getItem("active_organization_role");
 }
 
 // helper pour savoir si connecté

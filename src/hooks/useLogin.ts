@@ -19,8 +19,17 @@ export function useLogin() {
           "access_token",
           result.access_token
         );
+        if (result.username !== null) {
+          sessionStorage.setItem("username", result.username);
+        }
         if (result.organization_id !== null) {
           setActiveOrganizationId(result.organization_id);
+        }
+        if (result.organization_role !== null) {
+          sessionStorage.setItem(
+            "active_organization_role",
+            result.organization_role
+          );
         }
 
         return result;

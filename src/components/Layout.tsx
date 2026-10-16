@@ -5,11 +5,14 @@ import { useLogout } from "../hooks/useLogout";
 function Layout() {
   const { handleLogout } = useLogout();
 
+  const userName = sessionStorage.getItem("username") || "Utilisateur";
+  const userRole = sessionStorage.getItem("active_organization_role") || "Rôle";
+
   return (
     <div className="min-h-screen bg-stone-50 lg:flex">
       <Sidebar
-        userName="Jean Dupont"
-        userRole="Administrateur"
+        userName={userName}
+        userRole={userRole}
         onLogout={handleLogout} 
       />
       <main className="min-w-0 flex-1 px-6 pb-10 pt-20 lg:p-10">
