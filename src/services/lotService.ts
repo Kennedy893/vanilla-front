@@ -68,3 +68,9 @@ export function getLots(
 export function getLotDetail(lotId: number): Promise<LotHistoryEvent[]> {
   return request<LotHistoryEvent[]>(`/api/lots/${lotId}/history`);
 }
+
+export function validateLot(lotId: number): Promise<void> {
+  return request<void>(`/api/lots/${lotId}/validate`, {
+    method: "POST",
+  });
+}

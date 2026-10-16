@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { PAGE_SIZE, useLots } from "../../hooks/useLots";
 import type { LotStatus } from "../../types/types";
 import { Archive, ArrowRightLeft, CircleCheck, Eye, QrCode } from "lucide-react";
+import { validateLot } from "../../services/lotService";
 
 // Onglets de filtre : value = statut envoyé au backend (undefined = tous les lots)
 const STATUS_TABS: { value: LotStatus | undefined; label: string }[] = [
@@ -19,10 +20,12 @@ const STATUS_TABS: { value: LotStatus | undefined; label: string }[] = [
 ];
 
 export default function LotsList() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [status, setStatus] = useState<LotStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
   const { lots, total, statusCounts, loading, error } = useLots(status, page);
+
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -37,6 +40,23 @@ export default function LotsList() {
     setStatus(nextStatus);
     setPage(1); // nouveau filtre => retour à la première page
   };
+
+  const handleValidateLot = (lotId: number) => {
+    if (!window.confirm("Voulez-vous vraiment valider la récolte de ce lot ?")) return;
+
+    setValidationError(null);
+
+    validateLot(lotId)
+        .then(() => {
+        // Recharge la page pour refléter le nouveau statut et les compteurs
+        window.location.reload();
+        })
+        .catch((err: unknown) => {
+        const message =
+            err instanceof Error ? err.message : "La validation du lot a échoué.";
+        setValidationError(message);
+        });
+    };
 
   // Plus de "return" anticipé : les onglets restent toujours affichés,
   // seule la zone sous les onglets change selon l'état.
@@ -61,6 +81,24 @@ export default function LotsList() {
             </button>
         ))}
         </div>
+
+        {validationError && (
+            <div
+                role="alert"
+                className="flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+            >
+                <span>{validationError}</span>
+                <button
+                type="button"
+                onClick={() => setValidationError(null)}
+                aria-label="Fermer"
+                className="text-red-700 hover:text-red-900"
+                >
+                ✕
+                </button>
+            </div>
+            )
+        }
 
         {loading && <p className="py-10 text-center text-sm text-stone-500">Chargement des lots...</p>}
 
@@ -134,6 +172,7 @@ export default function LotsList() {
                                 type="button"
                                 title="Valider la récolte"
                                 aria-label="Valider la récolte"
+                                onClick={() => handleValidateLot(lot.id)}
                                 className="rounded-lg bg-emerald-800 p-2 text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
                             >
                             <CircleCheck className="h-4 w-4" />
