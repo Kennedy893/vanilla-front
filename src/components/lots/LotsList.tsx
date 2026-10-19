@@ -35,10 +35,10 @@ export default function LotsList({
   const navigate = useNavigate();
   const [status, setStatus] = useState<LotStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
-    const { lots, total, statusCounts, loading, error, refresh } = useLots(status, page);
+  const { lots, total, statusCounts, loading, error, refresh } = useLots(status, page);
 
   const [validationError, setValidationError] = useState<string | null>(null);
-    const [transferLot, setTransferLot] = useState<LotListItem | null>(null);
+  const [transferLot, setTransferLot] = useState<LotListItem | null>(null);
 
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
 

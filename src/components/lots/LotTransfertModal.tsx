@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRightLeft, X } from "lucide-react";
 import { createTransfer } from "../../services/lotService";
 import type { TransferLocation, TransferOrganization } from "../../types/types";
+import { getLocations, getOrganizations } from "../../services/listServices";
 
 const inputClass =
 	"block w-full rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-stone-900 transition focus:border-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:bg-stone-100 disabled:text-stone-500";
@@ -34,6 +35,59 @@ export default function LotTransfertModal({
 	const [notes, setNotes] = useState("");
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [organizationOptions, setOrganizationOptions] = useState<TransferOrganization[]>([]);
+	const [locationOptions, setLocationOptions] = useState<TransferLocation[]>([]);
+	const [loadingOptions, setLoadingOptions] = useState(true);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		async function loadOptions() {
+			setLoadingOptions(true);
+			setError(null);
+
+			try {
+			const [orgs, locs] = await Promise.all([
+				getOrganizations(),
+				getLocations(),
+			]);
+
+			if (cancelled) return;
+
+			setOrganizationOptions(orgs);
+			setLocationOptions(locs);
+
+			if (orgs.length > 0) {
+				setOrganizationId(String(orgs[0].id));
+			}
+
+			if (locs.length > 0) {
+				setLocationId(String(locs[0].id));
+			}
+
+			console.log("Organisations récupérées :", orgs);
+			console.log("Lieux récupérés :", locs);
+			} catch (err) {
+			if (!cancelled) {
+				setError(
+				err instanceof Error
+					? err.message
+					: "Impossible de charger les organisations et les lieux."
+				);
+			}
+			} finally {
+			if (!cancelled) {
+				setLoadingOptions(false);
+			}
+			}
+		}
+
+		loadOptions();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -86,17 +140,41 @@ export default function LotTransfertModal({
 					<div className="space-y-5 overflow-y-auto px-6 py-5">
 						<div>
 							<label htmlFor="transfer-organization" className={labelClass}>Organisation destinataire</label>
-							<select id="transfer-organization" required value={organizationId} disabled={submitting} onChange={(event) => setOrganizationId(event.target.value)} className={inputClass}>
-								<option value="" disabled>Sélectionner une organisation…</option>
-								{organizations.map((organization) => <option key={organization.id} value={organization.id}>{organization.name}</option>)}
+							<select
+								id="transfer-organization"
+								required
+								value={organizationId}
+								disabled={submitting || loadingOptions}
+								onChange={(event) => setOrganizationId(event.target.value)}
+								className={inputClass}
+							>
+								<option value="">Sélectionner une organisation…</option>
+
+								{organizationOptions.map((organization) => (
+									<option key={organization.id} value={organization.id}>
+									{organization.name}
+									</option>
+								))}
 							</select>
 						</div>
 
 						<div>
 							<label htmlFor="transfer-location" className={labelClass}>Lieu de destination</label>
-							<select id="transfer-location" required value={locationId} disabled={submitting} onChange={(event) => setLocationId(event.target.value)} className={inputClass}>
-								<option value="" disabled>Sélectionner un lieu…</option>
-								{locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
+							<select
+								id="transfer-location"
+								required
+								value={locationId}
+								disabled={submitting || loadingOptions}
+								onChange={(event) => setLocationId(event.target.value)}
+								className={inputClass}
+							>
+								<option value="">Sélectionner un lieu…</option>
+
+								{locationOptions.map((location) => (
+									<option key={location.id} value={location.id}>
+									{location.name}
+									</option>
+								))}
 							</select>
 						</div>
 
@@ -115,7 +193,7 @@ export default function LotTransfertModal({
 
 					<div className="flex justify-end gap-3 border-t border-stone-200 bg-stone-50 px-6 py-4">
 						<button type="button" onClick={handleClose} disabled={submitting} className="rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:opacity-50">Annuler</button>
-						<button type="submit" disabled={submitting || organizations.length === 0 || locations.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-emerald-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
+						<button type="submit" disabled={submitting || loadingOptions || organizationOptions.length === 0 || locationOptions.length === 0} className="inline-flex items-center gap-2 rounded-lg bg-emerald-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60">
 							{submitting ? "Transfert…" : "Confirmer le transfert"}
 						</button>
 					</div>

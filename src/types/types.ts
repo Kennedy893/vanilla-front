@@ -155,3 +155,18 @@ export interface CreateTransferRequest {
   dispatch_date: string;
   notes?: string;
 }
+
+export interface Organization {
+  id: number;
+  name: string;
+  organization_type: string | null;
+  created_at: string | null;
+}
+
+export interface Location {
+  id: number;
+  name: string;
+  location_type: string | null;
+  latitude: number;
+  longitude: number;
+}
