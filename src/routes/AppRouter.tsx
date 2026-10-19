@@ -5,6 +5,7 @@ import Dashboard from "../pages/Dashboard";
 import Layout from "../components/Layout";
 import Lots from "../pages/Lots";
 import LotDetail from "../components/lots/LotDetail";
+import Transfert from "../pages/Transfert";
 
 export default function AppRouter() {
   return (
@@ -17,6 +18,11 @@ export default function AppRouter() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/lots" element={<Lots />} />
         <Route path="/lots/:lotId" element={<LotDetail />} />
+        <Route path="/transfers" element={<Transfert />} />
+        <Route path="/exploitations" element={<div>Exploitations</div>} />
+        <Route path="/controles-qualite" element={<div>Contrôles qualité</div>} />
+        <Route path="/qr-codes" element={<div>QR codes</div>} />
+        <Route path="/utilisateurs" element={<div>Utilisateurs</div>} />
       </Route>
 
       {/* Redirections */}

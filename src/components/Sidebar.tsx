@@ -10,11 +10,13 @@ import {
   LogOut,
   Menu,
   X,
+  ArrowRightLeft,
 } from "lucide-react";
 
 const navItems = [
   { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { to: "/lots", label: "Lots", icon: Package },
+  { to: "/transfers", label: "Transferts en attente", icon: ArrowRightLeft },
   { to: "/exploitations", label: "Exploitations", icon: Sprout },
   { to: "/controles-qualite", label: "Contrôles qualité", icon: ClipboardCheck },
   { to: "/qr-codes", label: "QR codes", icon: QrCode },

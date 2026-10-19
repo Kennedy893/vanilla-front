@@ -170,3 +170,19 @@ export interface Location {
   latitude: number;
   longitude: number;
 }
+
+export interface PendingTransferItem {
+  transfer_id: number;
+  event_code: string;
+  dispatch_date: string | null;
+  from_organization_id: number;
+  from_organization_name: string | null;
+  sent_by: string;
+  origin_location_name: string;
+  destination_location_name: string;
+  notes: string | null;
+  lot_id: number;
+  lot_code: string;
+  quantity_kg: number;
+  product_state: string | null;
+}

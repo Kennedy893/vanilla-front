@@ -1,5 +1,5 @@
 import { getAccessToken, getActiveOrganizationId } from "./authService";
-import type { CreateLotRequest, CreateTransferRequest, Exploitation, Lot, LotHistoryEvent, LotsList, LotStatus } from "../types/types";
+import type { CreateLotRequest, CreateTransferRequest, Exploitation, Lot, LotHistoryEvent, LotsList, LotStatus, PendingTransferItem } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -79,5 +79,23 @@ export function createTransfer(lotId: number, payload: CreateTransferRequest): P
   return request<void>(`/api/lots/${lotId}/transfer`, {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export function getPendingTransfers(): Promise<PendingTransferItem[]> {
+  return request<PendingTransferItem[]>("/api/pending_transfers");
+}
+
+export function validateTransfer(transferId: number, receiptDate: string): Promise<void> {
+  return request<void>(`/api/pending_transfers/${transferId}/validate`, {
+    method: "POST",
+    body: JSON.stringify({ receipt_date: receiptDate }),
+  });
+}
+
+export function rejectTransfer(transferId: number, reason: string): Promise<void> {
+  return request<void>(`/api/pending_transfers/${transferId}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
   });
 }
