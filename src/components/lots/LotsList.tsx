@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PAGE_SIZE, useLots } from "../../hooks/useLots";
 import type { LotStatus } from "../../types/types";
@@ -24,16 +24,18 @@ const STATUS_TABS: { value: LotStatus | undefined; label: string }[] = [
 interface LotsListProps {
     transferOrganizations?: TransferOrganization[];
     transferLocations?: TransferLocation[];
+    refreshToken?: number;
 }
 
 export default function LotsList({
     transferOrganizations = [],
     transferLocations = [],
+    refreshToken = 0,
 }: LotsListProps) {
   const navigate = useNavigate();
   const [status, setStatus] = useState<LotStatus | undefined>(undefined);
   const [page, setPage] = useState(1);
-  const { lots, total, statusCounts, loading, error } = useLots(status, page);
+    const { lots, total, statusCounts, loading, error, refresh } = useLots(status, page);
 
   const [validationError, setValidationError] = useState<string | null>(null);
     const [transferLot, setTransferLot] = useState<LotListItem | null>(null);
@@ -59,15 +61,18 @@ export default function LotsList({
 
     validateLot(lotId)
         .then(() => {
-        // Recharge la page pour refléter le nouveau statut et les compteurs
-        window.location.reload();
+        refresh();
         })
         .catch((err: unknown) => {
         const message =
             err instanceof Error ? err.message : "La validation du lot a échoué.";
         setValidationError(message);
         });
-    };
+        };
+
+    useEffect(() => {
+        if (refreshToken > 0) refresh();
+    }, [refreshToken, refresh]);
 
   // Plus de "return" anticipé : les onglets restent toujours affichés,
   // seule la zone sous les onglets change selon l'état.
@@ -253,7 +258,10 @@ export default function LotsList({
                 organizations={transferOrganizations}
                 locations={transferLocations}
                 onClose={() => setTransferLot(null)}
-                onTransferred={() => window.location.reload()}
+                onTransferred={() => {
+                    refresh();
+                    setTransferLot(null);
+                }}
             />
         )}
     </div>

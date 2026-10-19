@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { LotsList, LotStatus } from "../types/types";
 import { getLots } from "../services/lotService";
 
@@ -8,6 +8,11 @@ export function useLots(status?: LotStatus, page = 1) {
   const [data, setData] = useState<LotsList | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshVersion, setRefreshVersion] = useState(0);
+
+  const refresh = useCallback(() => {
+    setRefreshVersion((version) => version + 1);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +36,7 @@ export function useLots(status?: LotStatus, page = 1) {
 
     fetchLots();
     return () => { cancelled = true; };
-  }, [status, page]);
+  }, [status, page, refreshVersion]);
 
   return {
     lots: data?.items ?? [],
@@ -39,5 +44,6 @@ export function useLots(status?: LotStatus, page = 1) {
     statusCounts: data?.status_counts ?? null,
     loading,
     error,
+    refresh,
   };
 }

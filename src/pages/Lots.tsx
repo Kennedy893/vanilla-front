@@ -4,6 +4,7 @@ import LotsList from "../components/lots/LotsList";
 
 export default function Lots() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [refreshToken, setRefreshToken] = useState(0);
 
   return (
     <section className="space-y-6">
@@ -18,12 +19,12 @@ export default function Lots() {
         </button>
       </div>
 
-      <LotsList />
+      <LotsList refreshToken={refreshToken} />
 
       {isCreateModalOpen && (
         <CreateLotModal
           onClose={() => setIsCreateModalOpen(false)}
-          onCreated={() => undefined}
+          onCreated={() => setRefreshToken((token) => token + 1)}
         />
       )}
     </section>
