@@ -10,6 +10,25 @@ export interface Exploitation {
   created_at: string | null;
 }
 
+export interface FarmListItem {
+  id: number;
+  farm_code: string;
+  name: string | null;
+  area_hectares: string | null;
+  location_name: string;
+  latitude: string | null;
+  longitude: string | null;
+  lots_count: number;
+  created_at: string | null;
+}
+
+export interface FarmsList {
+  items: FarmListItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface CreateLotRequest {
   farm_id: number;
   quantity_kg: number;

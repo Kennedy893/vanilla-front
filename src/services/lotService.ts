@@ -1,5 +1,5 @@
 import { getAccessToken, getActiveOrganizationId } from "./authService";
-import type { CreateLotRequest, CreateTransferRequest, Exploitation, Lot, LotHistoryEvent, LotsList, LotStatus, PendingTransferItem } from "../types/types";
+import type { CreateLotRequest, CreateTransferRequest, Exploitation, FarmsList, Lot, LotHistoryEvent, LotsList, LotStatus, PendingTransferItem } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -45,6 +45,17 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
 export function getExploitations(): Promise<Exploitation[]> {
   return request<Exploitation[]>("/api/farms");
+}
+
+export function getFarmsList(
+  filters: { query?: string; limit?: number; offset?: number } = {}
+): Promise<FarmsList> {
+  const params = new URLSearchParams();
+  if (filters.query?.trim()) params.set("q", filters.query.trim());
+  if (filters.limit) params.set("limit", String(filters.limit));
+  if (filters.offset) params.set("offset", String(filters.offset));
+  const query = params.toString();
+  return request<FarmsList>(`/api/farms/list${query ? `?${query}` : ""}`);
 }
 
 export function createLot(payload: CreateLotRequest): Promise<Lot> {

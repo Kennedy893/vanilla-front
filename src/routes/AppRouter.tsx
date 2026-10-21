@@ -6,6 +6,7 @@ import Layout from "../components/Layout";
 import Lots from "../pages/Lots";
 import LotDetail from "../components/lots/LotDetail";
 import Transfert from "../pages/Transfert";
+import Exploitation from "../pages/Exploitation";
 
 export default function AppRouter() {
   return (
@@ -19,7 +20,7 @@ export default function AppRouter() {
         <Route path="/lots" element={<Lots />} />
         <Route path="/lots/:lotId" element={<LotDetail />} />
         <Route path="/transfers" element={<Transfert />} />
-        <Route path="/exploitations" element={<div>Exploitations</div>} />
+        <Route path="/exploitations" element={<Exploitation />} />
         <Route path="/controles-qualite" element={<div>Contrôles qualité</div>} />
         <Route path="/qr-codes" element={<div>QR codes</div>} />
         <Route path="/utilisateurs" element={<div>Utilisateurs</div>} />
