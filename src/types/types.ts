@@ -29,6 +29,22 @@ export interface FarmsList {
   offset: number;
 }
 
+export interface FarmWriteRequest {
+  name: string;
+  area_hectares?: number | null;
+  location_name: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+export interface FarmUpdateRequest {
+  name?: string;
+  area_hectares?: number | null;
+  location_name?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 export interface CreateLotRequest {
   farm_id: number;
   quantity_kg: number;

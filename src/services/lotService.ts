@@ -1,5 +1,5 @@
 import { getAccessToken, getActiveOrganizationId } from "./authService";
-import type { CreateLotRequest, CreateTransferRequest, Exploitation, FarmsList, Lot, LotHistoryEvent, LotsList, LotStatus, PendingTransferItem } from "../types/types";
+import type { CreateLotRequest, CreateTransferRequest, Exploitation, FarmUpdateRequest, FarmWriteRequest, FarmsList, Lot, LotHistoryEvent, LotsList, LotStatus, PendingTransferItem } from "../types/types";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -40,6 +40,8 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new Error(extractErrorMessage(result));
   }
 
+  if (response.status === 204) return undefined as T;
+
   return response.json() as Promise<T>;
 }
 
@@ -56,6 +58,24 @@ export function getFarmsList(
   if (filters.offset) params.set("offset", String(filters.offset));
   const query = params.toString();
   return request<FarmsList>(`/api/farms/list${query ? `?${query}` : ""}`);
+}
+
+export function createFarm(payload: FarmWriteRequest): Promise<Exploitation> {
+  return request<Exploitation>("/api/farms", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateFarm(farmId: number, payload: FarmUpdateRequest): Promise<Exploitation> {
+  return request<Exploitation>(`/api/farms/${farmId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteFarm(farmId: number): Promise<void> {
+  await request<unknown>(`/api/farms/${farmId}`, { method: "DELETE" });
 }
 
 export function createLot(payload: CreateLotRequest): Promise<Lot> {

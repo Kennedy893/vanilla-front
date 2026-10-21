@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getFarmsList } from "../services/lotService";
 import type { FarmListItem } from "../types/types";
 
@@ -9,6 +9,11 @@ export function useFarms(query: string, page: number) {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshVersion, setRefreshVersion] = useState(0);
+
+  const refresh = useCallback(() => {
+    setRefreshVersion((version) => version + 1);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,7 +42,7 @@ export function useFarms(query: string, page: number) {
 
     fetchFarms();
     return () => { cancelled = true; };
-  }, [query, page]);
+  }, [query, page, refreshVersion]);
 
-  return { items, total, loading, error };
+  return { items, total, loading, error, refresh };
 }
