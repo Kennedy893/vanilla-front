@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PAGE_SIZE, useLots } from "../../hooks/useLots";
 import type { LotStatus } from "../../types/types";
-import { Archive, ArrowRightLeft, CircleCheck, Eye, QrCode } from "lucide-react";
-import { validateLot } from "../../services/lotService";
+import { Archive, ArchiveRestore, ArrowRightLeft, CircleCheck, Eye, QrCode } from "lucide-react";
+import { archiveLot, unarchiveLot, validateLot } from "../../services/lotService";
 import LotTransfertModal from "./LotTransfertModal";
 import type { LotListItem, TransferLocation, TransferOrganization } from "../../types/types";
 
@@ -20,6 +20,16 @@ const STATUS_TABS: { value: LotStatus | undefined; label: string }[] = [
   { value: "exported", label: "Exportés" },
   { value: "archived", label: "Archivés" },
 ];
+
+const STATUS_LABELS: Record<LotStatus, string> = {
+    created: "En attente",
+    available: "Disponible",
+    in_transfer: "En transfert",
+    processing: "En transformation",
+    blocked: "Bloqué",
+    exported: "Exporté",
+    archived: "Archivé",
+};
 
 interface LotsListProps {
     transferOrganizations?: TransferOrganization[];
@@ -74,6 +84,36 @@ export default function LotsList({
         if (refreshToken > 0) refresh();
     }, [refreshToken, refresh]);
 
+    const handleArchiveLot = (lotId: number) => {
+        const reason = window.prompt("Raison de l'archivage :", "Archivage manuel");
+        if (reason === null) return; // annulé
+        if (reason.trim() === "") {
+            setValidationError("La raison de l'archivage est obligatoire.");
+            return;
+        }
+
+        archiveLot(lotId, reason.trim())
+            .then(() => refresh())
+            .catch((err: unknown) => {
+            setValidationError(
+                err instanceof Error ? err.message : "L'archivage du lot a échoué."
+            );
+            });
+    };
+
+    const handleUnarchiveLot = (lotId: number) => {
+        if (!window.confirm("Voulez-vous vraiment désarchiver ce lot ?")) return;
+        unarchiveLot(lotId)
+            .then(() => {
+                refresh();
+            })
+            .catch((err: unknown) => {
+                const message =
+                    err instanceof Error ? err.message : "Le désarchivage du lot a échoué.";
+                setValidationError(message);
+            });
+    };
+
   // Plus de "return" anticipé : les onglets restent toujours affichés,
   // seule la zone sous les onglets change selon l'état.
   return (
@@ -83,14 +123,14 @@ export default function LotsList({
         <div className="flex flex-wrap gap-2">
         {STATUS_TABS.map((tab) => (
             <button
-            key={tab.label}
-            type="button"
-            onClick={() => handleSelectStatus(tab.value)}
-            className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-emerald-700/30 ${
-                tab.value === status
-                ? "border-emerald-800 bg-emerald-800 text-white"
-                : "border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
-            }`}
+                key={tab.label}
+                type="button"
+                onClick={() => handleSelectStatus(tab.value)}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-emerald-700/30 ${
+                    tab.value === status
+                    ? "border-emerald-800 bg-emerald-800 text-white"
+                    : "border-stone-300 bg-white text-stone-700 hover:bg-stone-100"
+                }`}
             >
             {tab.label}
             {statusCounts && ` (${countFor(tab.value)})`}
@@ -105,10 +145,10 @@ export default function LotsList({
             >
                 <span>{validationError}</span>
                 <button
-                type="button"
-                onClick={() => setValidationError(null)}
-                aria-label="Fermer"
-                className="text-red-700 hover:text-red-900"
+                    type="button"
+                    onClick={() => setValidationError(null)}
+                    aria-label="Fermer"
+                    className="text-red-700 hover:text-red-900"
                 >
                 ✕
                 </button>
@@ -138,13 +178,13 @@ export default function LotsList({
                 <thead className="bg-stone-50">
                 <tr>
                     {[
-                    "Code du lot",
-                    "Exploitation",
-                    "État du produit",
-                    "Quantité (kg)",
-                    "Statut",
-                    "Date de récolte",
-                    "Actions",
+                        "Code du lot",
+                        "Exploitation",
+                        "État du produit",
+                        "Quantité (kg)",
+                        "Statut",
+                        "Date de récolte",
+                        "Actions",
                     ].map((title) => (
                     <th
                         key={title}
@@ -158,14 +198,14 @@ export default function LotsList({
 
                 <tbody className="divide-y divide-stone-100">
                 {lots.map((lot) => (
-                    <tr key={lot.id} className="transition hover:bg-stone-50">
+                    <tr key={lot.id} className={`transition hover:bg-stone-50 ${lot.status === "archived" ? "bg-stone-50/70" : ""}`}>
                     <td className="whitespace-nowrap px-4 py-3 font-medium text-stone-900">{lot.lot_code}</td>
                     <td className="px-4 py-3 text-stone-700">{lot.farm.name ?? lot.farm.farm_code}</td>
                     <td className="px-4 py-3 text-stone-700">{lot.product_state ?? "-"}</td>
                     <td className="px-4 py-3 tabular-nums text-stone-700">{lot.quantity_kg}</td>
                     <td className="px-4 py-3">
-                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
-                        {lot.status ?? "-"}
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${lot.status === "archived" ? "bg-stone-200 text-stone-700" : "bg-emerald-50 text-emerald-800"}`}>
+                        {lot.status ? STATUS_LABELS[lot.status] : "-"}
                         </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-stone-700">
@@ -184,24 +224,28 @@ export default function LotsList({
                             >
                             <Eye className="h-4 w-4" />
                             </button>
-                            <button
-                                type="button"
-                                title="Valider la récolte"
-                                aria-label="Valider la récolte"
-                                onClick={() => handleValidateLot(lot.id)}
-                                className="rounded-lg bg-emerald-800 p-2 text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
-                            >
-                            <CircleCheck className="h-4 w-4" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setTransferLot(lot)}
-                                title="Transférer"
-                                aria-label="Transférer"
-                                className="rounded-lg border border-stone-300 bg-white p-2 text-stone-600 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
-                            >
-                            <ArrowRightLeft className="h-4 w-4" />
-                            </button>
+                            {!lot.status || lot.status !== "archived" ? (
+                                <>
+                                    <button
+                                        type="button"
+                                        title="Valider la récolte"
+                                        aria-label="Valider la récolte"
+                                        onClick={() => handleValidateLot(lot.id)}
+                                        className="rounded-lg bg-emerald-800 p-2 text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
+                                    >
+                                    <CircleCheck className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setTransferLot(lot)}
+                                        title="Transférer"
+                                        aria-label="Transférer"
+                                        className="rounded-lg border border-stone-300 bg-white p-2 text-stone-600 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30"
+                                    >
+                                    <ArrowRightLeft className="h-4 w-4" />
+                                    </button>
+                                </>
+                            ) : null}
                             <button
                                 type="button"
                                 title="Voir / imprimer le QR code"
@@ -212,11 +256,12 @@ export default function LotsList({
                             </button>
                             <button
                                 type="button"
-                                title="Archiver"
-                                aria-label="Archiver"
-                                className="rounded-lg border border-red-200 bg-white p-2 text-red-700 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+                                onClick={() => lot.status === "archived" ? handleUnarchiveLot(lot.id) : handleArchiveLot(lot.id)}
+                                title={lot.status === "archived" ? "Désarchiver" : "Archiver"}
+                                aria-label={lot.status === "archived" ? "Désarchiver" : "Archiver"}
+                                className={`rounded-lg border bg-white p-2 transition focus:outline-none focus:ring-2 ${lot.status === "archived" ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50 focus:ring-emerald-500/30" : "border-red-200 text-red-700 hover:bg-red-50 focus:ring-red-500/30"}`}
                             >
-                            <Archive className="h-4 w-4" />
+                            {lot.status === "archived" ? <ArchiveRestore className="h-4 w-4" /> : <Archive className="h-4 w-4" />}
                             </button>
                         </div>
                         </td>
@@ -229,10 +274,10 @@ export default function LotsList({
 
         <div className="flex items-center justify-between">
             <button
-            type="button"
-            disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
-            className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-50"
+                type="button"
+                disabled={page <= 1}
+                onClick={() => setPage(page - 1)}
+                className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-50"
             >
             Précédent
             </button>
@@ -240,10 +285,10 @@ export default function LotsList({
             Page {page} / {pageCount}
             </span>
             <button
-            type="button"
-            disabled={page >= pageCount}
-            onClick={() => setPage(page + 1)}
-            className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-50"
+                type="button"
+                disabled={page >= pageCount}
+                onClick={() => setPage(page + 1)}
+                className="rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-700/30 disabled:cursor-not-allowed disabled:opacity-50"
             >
             Suivant
             </button>

@@ -99,3 +99,16 @@ export function rejectTransfer(transferId: number, reason: string): Promise<void
     body: JSON.stringify({ reason }),
   });
 }
+
+export function archiveLot(lotId: number, reason: string): Promise<Lot> {
+  return request<Lot>(`/api/lots/${lotId}/archive`, {
+    method: "POST",
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export function unarchiveLot(lotId: number): Promise<Lot> {
+  return request<Lot>(`/api/lots/${lotId}/unarchive`, {
+    method: "POST",
+  });
+}

@@ -37,6 +37,10 @@ export interface Lot {
   holder_id: number;
   created_at: string | null;
   updated_at: string | null;
+  archived_at: string | null;
+  archived_by_id: number | null;
+  archived_reason: string | null;
+  archived_from_status: LotStatus | null;
 }
 
 // Exploitation incluse dans la réponse de la liste des lots
